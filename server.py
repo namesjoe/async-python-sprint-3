@@ -1,11 +1,10 @@
 import json
 import time
-from typing import List, Dict
+from typing import Dict
 from collections import OrderedDict
 
 import websockets
 
-import config
 from logger import setup_logger, get_logger
 
 setup_logger('server.log')
