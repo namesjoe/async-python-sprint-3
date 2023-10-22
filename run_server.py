@@ -2,17 +2,18 @@ import asyncio
 
 import websockets
 
-import config
+from config import Settings
 from server import Chat
 
+settings = Settings()
 
 async def main():
     server = Chat()
 
     async with websockets.serve(
-            server.handle_client, host=config.SERVER_HOST, port=config.SERVER_PORT
+            server.handle_client, host=settings.SERVER_HOST, port=settings.SERVER_PORT
     ):
-        print(f"WebSocket server started on {config.SERVER_HOST}:{config.SERVER_PORT}")
+        print(f"WebSocket server started on {settings.SERVER_HOST}:{settings.SERVER_PORT}")
 
         await asyncio.Future()  # Keep the server running
 

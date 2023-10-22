@@ -1,16 +1,15 @@
-# Server configuration
-SERVER_HOST = '127.0.0.1'
-SERVER_PORT = 8000
-SERVER_URL = f"http://{SERVER_HOST}:{SERVER_PORT}"
+from pydantic import BaseSettings
 
-# Chat configuration
-MAX_MESSAGES = 20
-MESSAGE_LIFETIME = 3600
-MAX_MESSAGE_SIZE = 5 * 1024 * 1024  # 5MB
 
-# Client configuration
-CLIENT_RECEIVE_MESSAGES = True
-CLIENT_SEND_MESSAGE = "Hello world!"
-CLIENT_SEND_RECIPIENT = None
-CLIENT_SEND_COMMENT = "This is test comment."
-CLIENT_SEND_FILE_PATH = "example.txt"
+class Settings(BaseSettings):
+    SERVER_HOST: str = '127.0.0.1'
+    SERVER_PORT: int = 8000
+    CLIENT_RECEIVE_MESSAGES: bool = True
+    CLIENT_SEND_MESSAGE: str = "Hello world!"
+    CLIENT_SEND_RECIPIENT: str = None
+    CLIENT_SEND_COMMENT: str = "This is a test comment."
+    CLIENT_SEND_FILE_PATH: str = "example.txt"
+    MAX_MESSAGES: int = 20
+    MESSAGE_LIFETIME: int = 3600
+    MAX_MESSAGE_SIZE: int = 5 * 1024 * 1024  # 5MB
+

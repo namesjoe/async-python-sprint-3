@@ -4,15 +4,16 @@ import json
 
 import websockets
 
-import config
+from config import Settings
 from logger import setup_logger, get_logger
 
+settings = Settings()
 setup_logger('client.log')
 logger = get_logger('server')
 
 
 async def receive_messages():
-    async with websockets.connect(f"ws://{config.SERVER_HOST}:{config.SERVER_PORT}/connect") as ws:
+    async with websockets.connect(f"ws://{settings.SERVER_HOST}:{settings.SERVER_PORT}/connect") as ws:
         try:
             async for message in ws:
                 data = json.loads(message)
@@ -34,7 +35,7 @@ async def send_message(message, recipient=None, comment=None, file_path=None):
             data["file_upload"] = True
             data["file_content"] = file_content_base64
 
-    async with websockets.connect(f"ws://{config.SERVER_HOST}:{config.SERVER_PORT}/connect") as ws:
+    async with websockets.connect(f"ws://{settings.SERVER_HOST}:{settings.SERVER_PORT}/connect") as ws:
         try:
             await ws.send(json.dumps(data))
         except websockets.exceptions.ConnectionClosed as exc:
@@ -43,14 +44,14 @@ async def send_message(message, recipient=None, comment=None, file_path=None):
 
 async def main():
     tasks = []
-    if config.CLIENT_RECEIVE_MESSAGES:
+    if settings.CLIENT_RECEIVE_MESSAGES:
         tasks.append(receive_messages())
 
     send_message_args = (
-        config.CLIENT_SEND_MESSAGE,
-        config.CLIENT_SEND_RECIPIENT,
-        config.CLIENT_SEND_COMMENT,
-        config.CLIENT_SEND_FILE_PATH
+        settings.CLIENT_SEND_MESSAGE,
+        settings.CLIENT_SEND_RECIPIENT,
+        settings.CLIENT_SEND_COMMENT,
+        settings.CLIENT_SEND_FILE_PATH
     )
     tasks.append(send_message(*send_message_args))
 
