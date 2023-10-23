@@ -34,12 +34,23 @@ class Chat:
     def remove_client(self, client):
         self.clients.remove(client)
 
-    def add_message(self, message: str, sender: str):
+    async def add_message(self, message: str, sender: str):
         timestamp = int(time.time())
         message_data = {"sender": sender, "comments": [], "timestamp": timestamp}
         if not self.is_user_banned(sender):
             self.messages[message] = message_data
             self.cleanup_messages()
+
+        # Broadcast the message to all connected clients
+        await self.broadcast_message(message, sender)
+
+    async def broadcast_message(self, message: str, sender: str):
+        for client in self.clients:
+            try:
+                data = json.dumps({"message": message, "sender": sender})
+                await client.send(data)
+            except websockets.ConnectionClosed:
+                pass
 
     def get_messages(self, n: int = 20) -> OrderedDict:
         messages = OrderedDict()
@@ -81,7 +92,6 @@ class Chat:
                 self.messages[message]["comments"].append(Comment(comment_text, sender))
 
         else:
-            # Handle an invalid message index here, such as logging a warning or ignoring the comment
             print("Invalid message index:", message)
 
     async def handle_upload(self, ws, data):
@@ -89,9 +99,8 @@ class Chat:
         if file:
             content = data.get("file_content", None)
             if content:
-                content = content.encode()  # Assuming the file content is sent as a base64-encoded string
+                content = content.encode()
 
-                # Notify the client that the file upload was successful
                 response = {"status": "success", "message": "File uploaded successfully."}
                 await ws.send(json.dumps(response))
             else:
@@ -117,7 +126,12 @@ class Chat:
                 elif comment is not None:
                     self.add_comment(msg_content, comment, sender)
                 else:
-                    self.add_message(msg_content, sender)
+                    await self.add_message(msg_content, sender)
+
+                    # Broadcast the message to all connected clients
+                    for client in self.clients:
+                        if client != ws:  # Don't send the message back to the sender
+                            await client.send(message)
         except websockets.ConnectionClosed:
             pass
         finally:
